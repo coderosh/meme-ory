@@ -11,6 +11,7 @@ import {
 } from "react-icons/tb";
 
 import { api } from "~/utils/api";
+import Vote from "./Vote";
 
 type PostProps = {
   id: string;
@@ -83,11 +84,18 @@ const Post = ({
       )}
     >
       <div className="flex gap-4">
-        <Votes
+        <Vote
+          currentVote={myVote}
+          onClickVote={onClickVote}
+          totalVotes={totalVotes}
+          allowVote={!!sessionData}
+          size={25}
+        />
+        {/* <Votes
           myVote={myVote}
           onClickVote={onClickVote}
           totalVotes={totalVotes}
-        />
+        /> */}
         {href ? (
           <Link href={href} className="w-full">
             <PostCard
@@ -116,58 +124,6 @@ const Post = ({
   );
 };
 
-const Votes = ({
-  myVote,
-  onClickVote,
-  totalVotes,
-}: {
-  myVote: "UP" | "DOWN" | null;
-  onClickVote: (vote: "UP" | "DOWN") => any;
-  totalVotes: number;
-}) => {
-  const { data: sessionData } = useSession();
-
-  return (
-    <div
-      className={`flex flex-col items-center gap-2 border-r border-gray-700 pr-2 ${
-        sessionData ? "" : "pointer-events-none opacity-30"
-      }`}
-    >
-      {myVote === "UP" ? (
-        <TbArrowBigUpFilled
-          size={25}
-          onClick={() => onClickVote("UP")}
-          className="cursor-pointer text-primary hover:opacity-80"
-          role="button"
-        />
-      ) : (
-        <TbArrowBigUp
-          size={25}
-          onClick={() => onClickVote("UP")}
-          className="cursor-pointer hover:text-primary"
-          role="button"
-        />
-      )}
-      <span>{totalVotes}</span>
-      {myVote === "DOWN" ? (
-        <TbArrowBigDownFilled
-          size={25}
-          onClick={() => onClickVote("DOWN")}
-          className="cursor-pointer text-primary hover:opacity-80"
-          role="button"
-        />
-      ) : (
-        <TbArrowBigDown
-          size={25}
-          onClick={() => onClickVote("DOWN")}
-          className="cursor-pointer hover:text-primary"
-          role="button"
-        />
-      )}
-    </div>
-  );
-};
-
 const PostCard = ({
   user,
   image,
@@ -177,7 +133,7 @@ const PostCard = ({
   title,
   rightFloat,
 }: {
-  user: { image: string | null; id: string };
+  user: { image: string | null; id: string; name: string | null };
   ago: string;
   image: string;
   imageClassName: string;
@@ -192,7 +148,7 @@ const PostCard = ({
           <img src={user.image || defaultProfile} alt="User Profile" />
         </div>
         <Link href={`/profile/${user.id}`} className="text-sm text-primary">
-          Roshan Acharya
+          {user.name}
         </Link>
         <span className="text-xs">{ago}</span>
       </div>

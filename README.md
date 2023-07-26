@@ -26,8 +26,11 @@ pnpm dev
 - [x] Share meme
 - [x] Upvote and Downvote
 - [x] Follow, unfollow
-- [ ] Pagination
 - [ ] Comments
+  - [x] Comment in meme
+  - [ ] Reply comments
+  - [ ] Upvote/Downvote
+- [ ] Pagination
 - [ ] Tags
 - [ ] User settings
 - [ ] Notifications
