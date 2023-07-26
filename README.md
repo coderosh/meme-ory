@@ -29,7 +29,7 @@ pnpm dev
 - [ ] Comments
   - [x] Comment in meme
   - [ ] Reply comments
-  - [ ] Upvote/Downvote
+  - [x] Upvote/Downvote
 - [ ] Pagination
 - [ ] Tags
 - [ ] User settings
