@@ -6,8 +6,6 @@
 
 <p align="center">Meme sharing platform.</p>
 
-> Assignment of `Web Technologies and Applications`
-
 ## Setup
 
 ```sh
@@ -21,24 +19,25 @@ pnpm install
 pnpm dev
 ```
 
+## Tech Stack
+
+- NextJs
+- Trpc
+- Tailwind CSS
+- Typescript
+- Prisma
+- SQLite
+- NextAuth
+- S3 Storage
+
 ## Features
 
-- [x] Share meme
-- [x] Upvote and Downvote
-- [x] Follow, unfollow
-- [ ] Comments
-  - [x] Comment in meme
-  - [ ] Reply comments
-  - [x] Upvote/Downvote
-- [ ] Pagination
-- [ ] Tags
-- [ ] User settings
-- [ ] Notifications
-- [ ] Filter based on likes/date
-- [ ] Search memes
-
-## Screenshots
-
-![home](./screenshots/home.png)
-![my profile](./screenshots/myprofile.png)
-![user profile](./screenshots/userprofile.png)
+- Authentication (google, discord)
+- Create meme post
+- Upvote/Downvote meme
+- Comment on meme
+- Upvote/Downvote comment
+- Nested comment reply
+- Infinite Scrolling
+- Follow/UnFollow users
+- User Profile

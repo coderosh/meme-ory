@@ -5,6 +5,22 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+const commentSelect = {
+  author: {
+    select: {
+      name: true,
+      image: true,
+      id: true,
+    },
+  },
+  votes: {
+    select: {
+      type: true,
+      userId: true,
+    },
+  },
+};
+
 export const commentRouter = createTRPCRouter({
   memeComments: publicProcedure
     .input(z.object({ memeId: z.string() }))
@@ -13,22 +29,20 @@ export const commentRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
         where: {
           memeId,
+          parentId: null,
         },
-        select: {
-          author: {
-            select: {
-              name: true,
-              image: true,
-              id: true,
-            },
-          },
-          text: true,
-          createdAt: true,
-          id: true,
-          votes: {
-            select: {
-              type: true,
-              userId: true,
+        include: {
+          ...commentSelect,
+          replies: {
+            orderBy: { createdAt: "desc" },
+            include: {
+              ...commentSelect,
+              replies: {
+                orderBy: { createdAt: "desc" },
+                include: {
+                  ...commentSelect,
+                },
+              },
             },
           },
         },
@@ -40,13 +54,14 @@ export const commentRouter = createTRPCRouter({
       z.object({
         text: z.string(),
         memeId: z.string(),
+        parentId: z.string().nullable(),
       })
     )
-    .mutation(async ({ input: { text, memeId }, ctx }) => {
+    .mutation(async ({ input: { text, memeId, parentId }, ctx }) => {
       const authorId = ctx.session.user.id;
 
       const comment = await ctx.prisma.comment.create({
-        data: { text, memeId, authorId },
+        data: { text, memeId, authorId, parentId },
       });
 
       return comment;

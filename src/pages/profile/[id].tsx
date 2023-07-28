@@ -74,18 +74,23 @@ export default function Profile() {
 }
 
 const Memes = ({ userId }: { userId: string }) => {
-  const { data: memes } = api.meme.userMemes.useQuery({
-    userId: userId,
-  });
+  const memes = api.meme.userMemes.useInfiniteQuery(
+    {
+      userId: userId,
+    },
+    {
+      getNextPageParam: (next) => next.nextCursor,
+    }
+  );
 
-  console.log({ memes });
-
-  if (!Array.isArray(memes)) return null;
+  if (memes.isLoading) return <p>Loading...</p>;
+  if (memes.isError) return <p>Something went wrong</p>;
 
   return (
-    <>
-      {memes.length > 0 && <h1 className="text-xl font-bold">Memes</h1>}
-      <PostsList memes={memes} />
-    </>
+    <PostsList
+      memes={memes.data?.pages.flatMap((page) => page.memes) || []}
+      fetchNextPage={memes.fetchNextPage}
+      hasMore={!!memes.hasNextPage}
+    />
   );
 };

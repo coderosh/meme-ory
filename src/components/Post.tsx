@@ -90,6 +90,7 @@ const Post = ({
           totalVotes={totalVotes}
           allowVote={!!sessionData}
           size={25}
+          hideReplyButton={true}
         />
         {/* <Votes
           myVote={myVote}

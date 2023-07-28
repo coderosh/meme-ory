@@ -5,126 +5,128 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+const memeSelect = {
+  id: true,
+  title: true,
+  createdAt: true,
+  description: true,
+  image: true,
+  votes: {
+    select: {
+      type: true,
+      userId: true,
+    },
+  },
+  user: {
+    select: {
+      name: true,
+      image: true,
+      id: true,
+    },
+  },
+};
+
 export const memeRouter = createTRPCRouter({
   meme: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input: { id } }) => {
       return ctx.prisma.meme.findUnique({
         where: { id },
-        select: {
-          id: true,
-          title: true,
-          createdAt: true,
-          description: true,
-          image: true,
-          votes: {
-            select: {
-              type: true,
-              userId: true,
-            },
-          },
-          user: {
-            select: {
-              name: true,
-              image: true,
-              id: true,
-            },
-          },
-        },
+        select: memeSelect,
       });
     }),
 
   // TODO: implement cursor based pagination and (sum of votes after prisma implements it)
-  memes: publicProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.meme.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        createdAt: true,
-        description: true,
-        image: true,
-        votes: {
-          select: {
-            type: true,
-            userId: true,
-          },
-        },
-        user: {
-          select: {
-            name: true,
-            image: true,
-            id: true,
-          },
-        },
-      },
-    });
-  }),
+  memes: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ ctx, input: { limit = 8, cursor } }) => {
+      const memes = await ctx.prisma.meme.findMany({
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        select: memeSelect,
+      });
 
-  followingMemes: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+      let nextCursor: typeof cursor;
 
-    return ctx.prisma.meme.findMany({
-      orderBy: { createdAt: "desc" },
-      where: {
-        user: {
-          followers: { some: { id: userId } },
-        },
-      },
-      select: {
-        title: true,
-        id: true,
-        createdAt: true,
-        description: true,
-        image: true,
-        votes: {
-          select: {
-            type: true,
-            userId: true,
+      if (memes.length > limit) {
+        const meme = memes.pop();
+        if (meme) {
+          nextCursor = { id: meme.id, createdAt: meme.createdAt };
+        }
+      }
+
+      return { memes, nextCursor };
+    }),
+
+  followingMemes: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ ctx, input: { limit = 8, cursor } }) => {
+      const userId = ctx.session.user.id;
+
+      const memes = await ctx.prisma.meme.findMany({
+        where: {
+          user: {
+            followers: { some: { id: userId } },
           },
         },
-        user: {
-          select: {
-            name: true,
-            image: true,
-            id: true,
-          },
-        },
-      },
-    });
-  }),
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        select: memeSelect,
+      });
+
+      let nextCursor: typeof cursor;
+
+      if (memes.length > limit) {
+        const meme = memes.pop();
+        if (meme) {
+          nextCursor = { id: meme.id, createdAt: meme.createdAt };
+        }
+      }
+
+      return { memes, nextCursor };
+    }),
 
   userMemes: publicProcedure
-    .input(z.object({ userId: z.string() }))
-    .query(async ({ ctx, input: { userId } }) => {
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ ctx, input: { userId, limit = 8, cursor } }) => {
       const memes = await ctx.prisma.meme.findMany({
-        orderBy: { createdAt: "desc" },
         where: {
           userId,
         },
-        select: {
-          title: true,
-          id: true,
-          createdAt: true,
-          description: true,
-          image: true,
-          votes: {
-            select: {
-              type: true,
-              userId: true,
-            },
-          },
-          user: {
-            select: {
-              name: true,
-              image: true,
-              id: true,
-            },
-          },
-        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        select: memeSelect,
       });
 
-      return memes;
+      let nextCursor: typeof cursor;
+
+      if (memes.length > limit) {
+        const meme = memes.pop();
+        if (meme) {
+          nextCursor = { id: meme.id, createdAt: meme.createdAt };
+        }
+      }
+
+      return { memes, nextCursor };
     }),
 
   create: protectedProcedure

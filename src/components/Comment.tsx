@@ -4,31 +4,29 @@ import { format } from "timeago.js";
 import { api } from "~/utils/api";
 import { useMemo } from "react";
 import { useSession } from "next-auth/react";
+import CreateComment from "./CreateComment";
+import CommentList, { CommentType } from "./CommentsList";
+import { useGeneralStore } from "~/stores/general";
+import { TbArrowForward } from "react-icons/tb";
 
 const defaultProfile = "/logo.svg";
 
 interface CommentProps {
-  id: string;
-  text: string;
-  author: {
-    name: string | null;
-    image: string | null;
-    id: string;
-  };
+  comment: CommentType;
   memeId: string;
-  createdAt: Date;
-  votes: { type: number; userId: string }[];
+  level: number;
+  create: (text: string, parentId: string) => any;
 }
+
 const Comment = ({
-  author,
-  id,
-  text,
-  createdAt,
+  comment: { author, id, text, createdAt, votes, replies, parentId },
   memeId,
-  votes,
+  level,
+  create,
 }: CommentProps) => {
   const trpcUtils = api.useContext();
   const { data: sessionData } = useSession();
+  const generalStore = useGeneralStore();
 
   const voteMutate = api.comment.vote.useMutation({
     onSuccess: () => {
@@ -60,9 +58,11 @@ const Comment = ({
         currentVote={currentVote}
         onClickVote={onClickVote}
         size={18}
+        onClickReply={() => generalStore.toggleActiveReplyId(id)}
         totalVotes={totalVotes}
+        hideReplyButton={level >= 2}
       />
-      <div>
+      <div className="w-full">
         <div className="mb-4 flex items-center gap-2">
           <div className="h-6 w-6 overflow-hidden rounded-full">
             <img src={author.image || defaultProfile} alt="User Profile" />
@@ -73,6 +73,24 @@ const Comment = ({
           <span className="text-xs">{ago}</span>
         </div>
         <div>{text}</div>
+        {generalStore.activeReplyId === id && (
+          <CreateComment
+            placeholder="Reply to comment"
+            autoFocus
+            create={(text) =>
+              // level >= 2 ????? just in case
+              create(text, level >= 2 ? (parentId as string) : id)
+            }
+          />
+        )}
+        {replies && (
+          <CommentList
+            level={level + 1}
+            create={create}
+            comments={replies}
+            memeId={memeId}
+          />
+        )}
       </div>
     </div>
   );

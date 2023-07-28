@@ -28,7 +28,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <Nav />
         <div className="flex min-h-0 flex-1 gap-4">
           <Sidebar />
-          <div className="h-full w-full overflow-auto rounded-lg">
+          <div
+            id="scroll-target"
+            className="h-full w-full overflow-auto rounded-lg"
+          >
             <Component {...pageProps} />
           </div>
         </div>

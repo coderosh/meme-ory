@@ -3,6 +3,7 @@ import {
   TbArrowBigDownFilled,
   TbArrowBigUp,
   TbArrowBigUpFilled,
+  TbArrowForward,
 } from "react-icons/tb";
 
 import clsx from "clsx";
@@ -10,19 +11,23 @@ import clsx from "clsx";
 interface VoteProps {
   currentVote: "UP" | "DOWN" | null;
   onClickVote: (vote: "UP" | "DOWN") => any;
+  onClickReply?: () => any;
   totalVotes: number;
   allowVote: boolean;
   size: number;
   className?: string;
+  hideReplyButton: boolean;
 }
 
 const Vote = ({
   allowVote,
   currentVote,
   onClickVote,
+  onClickReply,
   totalVotes,
   size,
   className,
+  hideReplyButton,
 }: VoteProps) => {
   return (
     <div
@@ -61,6 +66,14 @@ const Vote = ({
           onClick={() => onClickVote("DOWN")}
           className="cursor-pointer hover:text-primary"
           role="button"
+        />
+      )}
+      {!hideReplyButton && (
+        <TbArrowForward
+          size={size}
+          role="button"
+          onClick={onClickReply}
+          className="cursor-pointe mt-2 hover:opacity-80"
         />
       )}
     </div>

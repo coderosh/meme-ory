@@ -26,6 +26,8 @@ model Meme {
     user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     votes       Vote[]
     Comment     Comment[]
+
+    @@unique([createdAt, id])
 }
 
 model Vote {
@@ -100,6 +102,10 @@ model Comment {
     meme   Meme          @relation(fields: [memeId], references: [id], onDelete: Cascade)
     author User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
     votes  CommentVote[]
+
+    parent   Comment?  @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+    replies  Comment[] @relation("ParentChild")
+    parentId String?
 }
 
 model CommentVote {

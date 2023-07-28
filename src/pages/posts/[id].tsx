@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import Comments from "~/components/Comments";
+import CommentSection from "~/components/CommentSection";
 import Post from "~/components/Post";
 import { api } from "~/utils/api";
 
@@ -20,7 +20,7 @@ export default function PostPage() {
   return (
     <div>
       <Post rightFloat={true} imageClassName="max-w-96 max-h-96" {...data} />
-      <Comments memeId={data.id} />
+      <CommentSection memeId={data.id} />
     </div>
   );
 }

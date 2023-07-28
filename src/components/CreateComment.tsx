@@ -1,35 +1,49 @@
-import { FormEvent, useState } from "react";
+import clsx from "clsx";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { api } from "~/utils/api";
 
-const CreateComment = ({ memeId }: { memeId: string }) => {
+interface CreateCommentProps {
+  create: (text: string) => any;
+  placeholder: string;
+  className?: string;
+  autoFocus?: boolean;
+}
+
+const CreateComment = ({
+  create,
+  className,
+  placeholder,
+  autoFocus = false,
+}: CreateCommentProps) => {
   const [text, setText] = useState("");
 
-  const trpcUtils = api.useContext();
-
-  const mutate = api.comment.create.useMutation({
-    onSuccess: () => {
-      trpcUtils.comment.memeComments.invalidate({ memeId });
-    },
-  });
-
-  const create = (e: FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    mutate.mutateAsync({ text, memeId });
-
+    create(text);
     setText("");
   };
 
+  const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value);
+  };
+
   return (
-    <div className="rounded-lg bg-background-light p-4">
-      <form onSubmit={create} className="flex flex-col gap-4">
+    <div className={clsx("rounded-lg bg-background-light p-4", className)}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <textarea
+          autoFocus={autoFocus}
           name="text"
           id="text"
           className="block w-full resize-none rounded-lg border border-gray-700 bg-background-light p-2"
           rows={3}
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Create a new comment"
+          onChange={onChange}
+          onKeyUp={(e) => {
+            if (e.key === "Enter" && e.ctrlKey) {
+              onSubmit(e);
+            }
+          }}
+          placeholder={placeholder}
         ></textarea>
         <input
           type="submit"

@@ -1,12 +1,22 @@
 import { api } from "~/utils/api";
-import Post from "~/components/Post";
 import PostsList from "~/components/PostsList";
 
 export default function Home() {
-  const { data: memes, isLoading, isError } = api.meme.memes.useQuery();
+  const memes = api.meme.memes.useInfiniteQuery(
+    {},
+    {
+      getNextPageParam: (next) => next.nextCursor,
+    }
+  );
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Something went wrong</p>;
+  if (memes.isLoading) return <p>Loading...</p>;
+  if (memes.isError) return <p>Something went wrong</p>;
 
-  return <PostsList memes={memes} />;
+  return (
+    <PostsList
+      memes={memes.data?.pages.flatMap((page) => page.memes) || []}
+      fetchNextPage={memes.fetchNextPage}
+      hasMore={!!memes.hasNextPage}
+    />
+  );
 }
